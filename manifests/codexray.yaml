@@ -1,0 +1,89 @@
+# -----------------------------------
+# Namespace Definition
+# -----------------------------------
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: codexray
+
+---
+# -----------------------------------
+# Service Definition
+# -----------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: codexray
+  namespace: codexray
+spec:
+  selector:
+    app: codexray
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: http
+  type: LoadBalancer
+
+---
+# -----------------------------------
+# PersistentVolumeClaim Definition
+# -----------------------------------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: codexray-pvc
+  namespace: codexray
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+# -----------------------------------
+# Deployment Definition
+# -----------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codexray
+  namespace: codexray
+  labels:
+    app: codexray
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: codexray
+  template:
+    metadata:
+      labels:
+        app: codexray
+    spec:
+      containers:
+        - name: codexray
+          image: codexray:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            periodSeconds: 5
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 250m
+              memory: 1Gi
+          volumeMounts:
+            - mountPath: /data
+              name: codexray-pv
+      volumes:
+        - name: codexray-pv
+          persistentVolumeClaim:
+            claimName: codexray-pvc

@@ -1,0 +1,11 @@
+FROM golang:1.23 AS builder
+RUN apt update && apt install -y liblz4-dev
+WORKDIR /app
+COPY . .
+RUN go build -o coroot-collector ./main.go
+
+FROM alpine:latest
+WORKDIR /root/
+COPY --from=builder /app/coroot-collector .
+EXPOSE 8080
+ENTRYPOINT ["./coroot-collector"]
