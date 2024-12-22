@@ -1,89 +1,93 @@
-# -----------------------------------
-# Namespace Definition
-# -----------------------------------
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: codexray
+name: CI/CD Pipeline for Codexray
 
----
-# -----------------------------------
-# PersistentVolumeClaim Definition
-# -----------------------------------
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: codexray-pvc
-  namespace: codexray
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-  storageClassName: local-path
+# -------------------------------------
+# Triggers: Run on push to main branch
+# -------------------------------------
+on:
+  push:
+    branches:
+      - main
 
----
-# -----------------------------------
-# Service Definition
-# -----------------------------------
-apiVersion: v1
-kind: Service
-metadata:
-  name: codexray
-  namespace: codexray
-spec:
-  selector:
-    app: codexray
-  ports:
-    - port: 80
-      targetPort: http
-      protocol: TCP
-  type: LoadBalancer
+# -------------------------------------
+# Define Environment Variables
+# -------------------------------------
+env:
+  DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/codexray:latest
 
----
-# -----------------------------------
-# Deployment Definition
-# -----------------------------------
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: codexray
-  namespace: codexray
-  labels:
-    app: codexray
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: codexray
-  template:
-    metadata:
-      labels:
-        app: codexray
-    spec:
-      containers:
-      - name: codexray
-        image: $DOCKERHUB_USERNAME/codexray:latest
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 8080
-          name: http
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-        resources:
-          requests:
-            cpu: 250m
-            memory: 512Mi
-          limits:
-            cpu: 500m
-            memory: 1Gi
-        volumeMounts:
-          - mountPath: /data
-            name: codexray-pv
-      volumes:
-        - name: codexray-pv
-          persistentVolumeClaim:
-            claimName: codexray-pvc
+# -------------------------------------
+# Job 1: CI - Build, Test, Lint
+# -------------------------------------
+jobs:
+  ci:
+    name: CI - Build, Test, Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set Up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Run Tests
+        run: |
+          go test ./...
+
+      - name: Run Linter
+        run: |
+          go fmt ./...
+          go vet ./...
+
+# -------------------------------------
+# Job 2: Build and Push Docker Image
+# -------------------------------------
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: ci  # Runs after CI passes
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Build Docker Image
+        run: |
+          docker build -t $DOCKER_IMAGE -f Dockerfile .
+
+      - name: Push Docker Image to Docker Hub
+        run: |
+          docker push $DOCKER_IMAGE
+
+# -------------------------------------
+# Job 3: Deploy to Kubernetes (K3s)
+# -------------------------------------
+  deploy-to-k3s:
+    name: Deploy to Kubernetes (K3s)
+    runs-on: ubuntu-latest
+    needs: build-and-push  # Runs after Docker image is pushed
+
+    steps:
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Configure kubeconfig
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" > kubeconfig.yaml
+          export KUBECONFIG=kubeconfig.yaml
+
+      - name: Apply Kubernetes Manifest
+        run: |
+          kubectl apply -f codexray.yaml
+
+      - name: Verify Deployment
+        run: |
+          kubectl get pods -n codexray
+          kubectl get svc -n codexray
