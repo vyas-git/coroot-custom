@@ -90,12 +90,18 @@ jobs:
         run: |
           echo "${{ secrets.KUBECONFIG_B64 }}" | base64 -d > kubeconfig.yaml
           export KUBECONFIG=$(pwd)/kubeconfig.yaml
-      - name: Debug Kubeconfig Secret
+     
+      - name: Verify Kubeconfig File
         run: |
-          echo "---- Raw Base64 Kubeconfig ----"
-          echo "${{ secrets.KUBECONFIG_B64 }}"
-          echo "---- Decoded Kubeconfig Preview ----"
-          echo "${{ secrets.KUBECONFIG_B64 }}" | base64 -d 
+          echo "---- Verify kubeconfig.yaml Existence ----"
+          ls -l kubeconfig.yaml
+          echo "---- Display kubeconfig.yaml Content ----"
+          cat kubeconfig.yaml
+          echo "---- Verify KUBECONFIG Environment Variable ----"
+          echo "KUBECONFIG is set to: $KUBECONFIG"
+          test -f $KUBECONFIG && echo "✅ Kubeconfig file exists and is readable" || echo "❌ Kubeconfig file missing"
+
+
       - name: Verify Kubernetes Access
         run: |
           echo "---- Kubernetes Cluster Info ----"
