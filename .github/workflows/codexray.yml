@@ -89,8 +89,22 @@ jobs:
       - name: Configure kubeconfig
         run: |
           echo "${{ secrets.KUBECONFIG }}" > kubeconfig.yaml
+          chmod 600 kubeconfig.yaml
           export KUBECONFIG=kubeconfig.yaml
 
+      - name: Debug Kubernetes Config
+        run: |
+          echo "---- KUBECONFIG Content ----"
+          cat kubeconfig.yaml
+          echo "---- Current Context ----"
+          kubectl config current-context
+          echo "---- Kubernetes Cluster Info ----"
+          kubectl cluster-info
+          echo "---- Kubernetes Nodes ----"
+          kubectl get nodes
+          echo "---- Kubernetes All Namespaces ----"
+          kubectl get pods --all-namespaces
+          
       - name: Apply Kubernetes Manifest
         run: |
           kubectl apply -f codexray.yaml
