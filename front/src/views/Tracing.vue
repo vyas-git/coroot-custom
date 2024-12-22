@@ -27,11 +27,11 @@
                         Select a chart area to see traces for a specific time range, duration, or status.
                     </div>
                     <div class="d-flex flex-column flex-md-row" style="gap: 8px; row-gap: 8px">
-                        <v-btn depressed small color="primary" :disabled="loading" class="text-body-2" @click="setSelection('errors')">
-                            <v-icon left small class="mr-0">mdi-filter</v-icon>Show error traces
+                        <v-btn depressed small color="success" :disabled="loading" class="text-body-2" @click="setSelection('errors')">
+                            Show error traces
                         </v-btn>
-                        <v-btn depressed small color="primary" :disabled="loading" class="text-body-2" @click="setSelection('slo violations')">
-                            <v-icon left small class="mr-0">mdi-filter</v-icon>Show latency SLO violations
+                        <v-btn depressed small color="success" :disabled="loading" class="text-body-2" @click="setSelection('slo violations')">
+                            Show latency SLO violations
                         </v-btn>
                     </div>
                 </template>

@@ -2,43 +2,24 @@
     <div>
         <ApplicationFilter :applications="applications" :configureTo="categoriesTo" @filter="setFilter" class="my-4" />
 
-        <div class="legend mb-3">
+        <!-- <div class="legend mb-3">
             <div v-for="s in statuses" class="item">
                 <div class="count" :class="s.color">{{ s.count }}</div>
                 <div class="label">{{ s.name }}</div>
             </div>
+        </div> -->
+
+        <div class="cards">
+            <Card v-for="s in statuses" :key="s.name" :name="s.name" :count="s.count" :background="s.background" :icon="s.color" />
         </div>
 
-        <v-data-table
-            dense
-            class="table"
-            mobile-breakpoint="0"
-            :items-per-page="50"
-            :items="items"
-            :headers="[
-                { value: 'application', text: 'Application', sortable: false },
-                { value: 'type', text: 'Type', sortable: false },
-                { value: 'errors', text: 'Errors', sortable: false, align: 'end' },
-                { value: 'latency', text: 'Latency', sortable: false, align: 'end' },
-                { value: 'upstreams', text: 'Upstreams', sortable: false, align: 'end' },
-                { value: 'instances', text: 'Instances', sortable: false, align: 'end' },
-                { value: 'restarts', text: 'Restarts', sortable: false, align: 'end' },
-                { value: 'cpu', text: 'CPU', sortable: false, align: 'end' },
-                { value: 'memory', text: 'Mem', sortable: false, align: 'end' },
-                { value: 'disk_io_load', text: 'I/O load', sortable: false, align: 'end' },
-                { value: 'disk_usage', text: 'Disk', sortable: false, align: 'end' },
-                { value: 'network', text: 'Net', sortable: false, align: 'end' },
-                { value: 'dns', text: 'DNS', sortable: false, align: 'end' },
-                { value: 'logs', text: 'Logs', sortable: false, align: 'center' },
-            ]"
-            :footer-props="{ itemsPerPageOptions: [10, 20, 50, 100, -1] }"
-        >
+        <CustomTable :items="items" :headers="headers" class="table">
             <template #item.application="{ item: { id, name, ns, color } }">
                 <div class="application">
-                    <div class="status" :class="color" />
+                    <div class="status" :style="{ backgroundColor: color }" />
                     <div class="name">
                         <router-link :to="link(id, undefined)">{{ name }}</router-link>
-                        <span v-if="ns" class="caption grey--text"> (ns:{{ ns }})</span>
+                        <span v-if="ns" class="caption"> (ns:{{ ns }})</span>
                     </div>
                 </div>
             </template>
@@ -108,19 +89,21 @@
                     />
                 </router-link>
             </template>
-        </v-data-table>
+        </CustomTable>
     </div>
 </template>
 
 <script>
+import CustomTable from '@/components/CustomTable.vue';
 import ApplicationFilter from '../components/ApplicationFilter.vue';
+import Card from '../components/Card.vue';
 
 const statuses = {
-    critical: { name: 'SLO violation', color: 'red lighten-1' },
-    warning: { name: 'Warning', color: 'orange lighten-1' },
-    info: { name: 'Errors in logs', color: 'blue lighten-1' },
-    unknown: { name: 'Integration required', color: 'purple lighten-1' },
-    ok: { name: 'OK', color: 'green lighten-1' },
+    critical: { name: 'SLO violation', background: 'red lighten-4', color: '#EF5350' },
+    warning: { name: 'Warning', background: 'orange lighten-4', color: '#FFA726' },
+    info: { name: 'Errors in logs', background: 'blue lighten-4', color: '#42A5F5' },
+    unknown: { name: 'Integration', background: 'purple lighten-4', color: '#AB47BC' },
+    ok: { name: 'OK', background: 'green lighten-4', color: '#66BB6A' },
 };
 
 export default {
@@ -129,14 +112,29 @@ export default {
         categoriesTo: Object,
     },
 
-    components: { ApplicationFilter },
+    components: { ApplicationFilter, Card, CustomTable },
 
     data() {
         return {
             filter: new Set(),
+            headers: [
+                { value: 'application', text: 'Application', sortable: false },
+                { value: 'type', text: 'Type', sortable: false },
+                { value: 'errors', text: 'Errors', sortable: false, align: 'end' },
+                { value: 'latency', text: 'Latency', sortable: false, align: 'end' },
+                { value: 'upstreams', text: 'Upstreams', sortable: false, align: 'end' },
+                { value: 'instances', text: 'Instances', sortable: false, align: 'end' },
+                { value: 'restarts', text: 'Restarts', sortable: false, align: 'end' },
+                { value: 'cpu', text: 'CPU', sortable: false, align: 'end' },
+                { value: 'memory', text: 'Mem', sortable: false, align: 'end' },
+                { value: 'disk_io_load', text: 'I/O load', sortable: false, align: 'end' },
+                { value: 'disk_usage', text: 'Disk', sortable: false, align: 'end' },
+                { value: 'network', text: 'Net', sortable: false, align: 'end' },
+                { value: 'dns', text: 'DNS', sortable: false, align: 'end' },
+                { value: 'logs', text: 'Logs', sortable: false, align: 'center' },
+            ],
         };
     },
-
     computed: {
         categories() {
             return Array.from(new Set((this.applications || []).map((a) => a.category)).values());
@@ -188,26 +186,18 @@ export default {
 </script>
 
 <style scoped>
-.table:deep(table) {
-    min-width: 500px;
-}
-.table:deep(tr:hover) {
-    background-color: unset !important;
-}
-.table:deep(th),
-.table:deep(td) {
-    padding: 4px 8px !important;
-}
-.table:deep(td:has(.application)) {
-    padding-left: 0 !important;
-}
 .table .application {
     display: flex;
     gap: 4px;
 }
+.caption {
+    padding-left: 20px;
+}
 .table .application .status {
-    height: 20px;
-    width: 4px;
+    height: 6px;
+    width: 6px;
+    border-radius: 50%;
+    align-self: center;
 }
 .table .application .name {
     max-width: 30ch;
@@ -215,31 +205,10 @@ export default {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.table .logs {
-    display: block;
-    position: relative;
-    height: 100%;
-    color: inherit;
-}
-.table .logs .value {
-    position: absolute;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.table:deep(td:has(.logs)) {
-    width: 120px;
-    min-width: 120px;
-    padding: 0 !important;
-}
-
 .icon {
     margin-right: 4px;
-    opacity: 80%;
+    width: 7px;
+    height: 8px;
 }
 .type {
     opacity: 60%;
@@ -271,26 +240,10 @@ export default {
     border-bottom: 2px solid red !important;
     background-color: unset !important;
 }
-.legend {
+
+.cards {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-    font-weight: 500;
-    font-size: 14px;
-}
-.legend .item {
-    display: flex;
-    gap: 4px;
-}
-.legend .count {
-    padding: 0 4px;
-    border-radius: 2px;
-    height: 18px;
-    line-height: 18px;
-    color: rgba(255, 255, 255, 0.8);
-}
-.legend .label {
-    opacity: 60%;
+    justify-content: space-between;
+    margin: 20px 0 20px 0;
 }
 </style>

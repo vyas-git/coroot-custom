@@ -1,9 +1,9 @@
 <template>
     <v-menu :value="!!query" offset-y max-height="50vh" attach=".v-app-bar">
         <template #activator="{}">
-            <v-text-field v-model="query" dense outlined hide-details flat placeholder="search for apps and nodes" @blur="close" @keydown.esc="close">
-                <template #prepend-inner>
-                    <v-icon color="grey">mdi-magnify</v-icon>
+            <v-text-field v-model="query" dense outlined flat hide-details placeholder="search for apps and nodes" @blur="close" @keydown.esc="close">
+                <template #append>
+                    <v-icon>mdi-magnify</v-icon>
                 </template>
             </v-text-field>
         </template>
@@ -105,4 +105,13 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.v-text-field input {
+    color: white !important;
+}
+.v-text-field ::placeholder {
+    color: white !important;
+    font-size: 14px;
+    font-weight: 400;
+}
+</style>

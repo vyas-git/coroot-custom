@@ -2,7 +2,7 @@
     <div>
         <v-progress-linear v-if="loading" indeterminate color="green" />
 
-        <v-alert v-if="error" color="red" icon="mdi-alert-octagon-outline" outlined text>
+        <v-alert v-if="error" color="red" icon="mdi-alert-octagon-outline" outlined text class="mt-2">
             {{ error }}
         </v-alert>
 

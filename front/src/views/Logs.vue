@@ -57,7 +57,7 @@
                                 </v-chip>
                             </template>
                         </v-text-field>
-                        <v-btn @click="runQuery" :disabled="disabled" color="primary" height="40">Query</v-btn>
+                        <v-btn @click="runQuery" :disabled="disabled" color="success" height="40">Query</v-btn>
                     </div>
                 </div>
 
