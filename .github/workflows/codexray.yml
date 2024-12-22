@@ -96,13 +96,9 @@ jobs:
           echo "---- Raw Base64 Kubeconfig ----"
           echo "${{ secrets.KUBECONFIG_B64 }}"
           echo "---- Decoded Kubeconfig Preview ----"
-          echo "${{ secrets.KUBECONFIG_B64 }}" | base64 -d | head -n 10
+          echo "${{ secrets.KUBECONFIG_B64 }}" | base64 -d 
       - name: Verify Kubernetes Access
         run: |
-          echo "---- KUBECONFIG Server ----"
-          kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}'
-          echo "---- Current Context ----"
-          kubectl config current-context
           echo "---- Kubernetes Cluster Info ----"
           kubectl cluster-info
           echo "---- Kubernetes Nodes ----"
