@@ -67,7 +67,7 @@ jobs:
 # -------------------------------------
 # Job 3: Deploy to Kubernetes (K3s)
 # -------------------------------------
- deploy-to-k3s:
+  deploy-to-k3s:
     name: Deploy to Kubernetes (K3s)
     runs-on: ubuntu-latest
     needs: build-and-push
