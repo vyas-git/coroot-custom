@@ -76,11 +76,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: List Directory Contents
-        run: |
-          pwd
-          ls -la
-
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
         with:
@@ -89,19 +84,22 @@ jobs:
       - name: Decode Kubeconfig Secret
         run: |
           echo "${{ secrets.KUBECONFIG_B64 }}" | base64 -d > kubeconfig.yaml
-          export KUBECONFIG=$(pwd)/kubeconfig.yaml
+          chmod 644 kubeconfig.yaml
+          chown $(whoami) kubeconfig.yaml
+
+      - name: Set KUBECONFIG Environment Variable
+        run: |
+          echo "KUBECONFIG=$(pwd)/kubeconfig.yaml" >> $GITHUB_ENV
+
       - name: Debug Kubernetes Connection
         run: |
           echo "---- KUBECONFIG Path ----"
           echo "KUBECONFIG=$KUBECONFIG"
-          echo "---- Verify File Existence ----"
-          ls -l kubeconfig.yaml || echo "❌ kubeconfig.yaml is missing"
-          echo "---- Display kubeconfig.yaml ----"
-          cat kubeconfig.yaml || echo "❌ Unable to read kubeconfig.yaml"
+          ls -l kubeconfig.yaml
+          cat kubeconfig.yaml
           echo "---- Test kubectl Connectivity ----"
-          kubectl cluster-info --kubeconfig=kubeconfig.yaml || echo "❌ Unable to reach the cluster"
-          echo "---- Test Nodes List ----"
-          kubectl get nodes --kubeconfig=kubeconfig.yaml || echo "❌ Unable to fetch nodes"
+          kubectl cluster-info
+          kubectl get nodes
 
       - name: Verify Kubernetes Access
         run: |
@@ -109,9 +107,10 @@ jobs:
           kubectl cluster-info
           echo "---- Kubernetes Nodes ----"
           kubectl get nodes
-            - name: Apply Kubernetes Manifest
-              run: |
-                kubectl apply -f codexray.yaml
+
+      - name: Apply Kubernetes Manifest
+        run: |
+          kubectl apply -f codexray.yaml
 
       - name: Verify Deployment
         run: |
