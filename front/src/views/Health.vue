@@ -1,12 +1,6 @@
 <template>
     <div>
-        <v-progress-linear indeterminate v-if="loading" color="green" />
-
-        <v-alert v-if="error" color="red" icon="mdi-alert-octagon-outline" outlined text>
-            {{ error }}
-        </v-alert>
-
-        <ApplicationFilter :applications="applications" @filter="setFilter" class="my-4" />
+        <ApplicationFilter :applications="applications" :configureTo="categoriesTo" @filter="setFilter" class="my-4" />
 
         <div class="legend mb-3">
             <div v-for="s in statuses" class="item">
@@ -21,7 +15,6 @@
             mobile-breakpoint="0"
             :items-per-page="50"
             :items="items"
-            no-data-text="No applications found"
             :headers="[
                 { value: 'application', text: 'Application', sortable: false },
                 { value: 'type', text: 'Type', sortable: false },
@@ -53,7 +46,7 @@
                 <div v-if="type" class="d-flex align-center">
                     <img
                         v-if="type.icon"
-                        :src="`${$coroot.base_path}static/img/tech-icons/${type.icon}.svg`"
+                        :src="`${$codexray.base_path}static/img/tech-icons/${type.icon}.svg`"
                         onerror="this.style.display='none'"
                         height="16"
                         width="16"
@@ -131,20 +124,17 @@ const statuses = {
 };
 
 export default {
+    props: {
+        applications: Array,
+        categoriesTo: Object,
+    },
+
     components: { ApplicationFilter },
 
     data() {
         return {
-            applications: [],
             filter: new Set(),
-            loading: false,
-            error: '',
         };
-    },
-
-    mounted() {
-        this.get();
-        this.$events.watch(this, this.get, 'refresh');
     },
 
     computed: {
@@ -187,23 +177,11 @@ export default {
     },
 
     methods: {
-        get() {
-            this.loading = true;
-            this.error = '';
-            this.$api.getOverview('applications', '', (data, error) => {
-                this.loading = false;
-                if (error) {
-                    this.error = error;
-                    return;
-                }
-                this.applications = data.applications;
-            });
-        },
         setFilter(filter) {
             this.filter = filter;
         },
         link(id, report, query) {
-            return { name: 'overview', params: { view: 'applications', id, report }, query: { ...query, ...this.$utils.contextQuery() } };
+            return { name: 'application', params: { id, report }, query: { ...query, ...this.$utils.contextQuery() } };
         },
     },
 };

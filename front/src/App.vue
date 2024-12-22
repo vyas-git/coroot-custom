@@ -1,12 +1,12 @@
 <template>
     <v-app>
-        <CheckForUpdates v-if="$coroot.check_for_updates" :currentVersion="$coroot.version" :instanceUuid="$coroot.uuid" />
+        <CheckForUpdates v-if="$codexray.check_for_updates" :currentVersion="$codexray.version" :instanceUuid="$codexray.uuid" />
 
         <v-app-bar app flat dark class="menu">
             <v-container class="py-0 fill-height flex-nowrap">
                 <router-link :to="project ? { name: 'overview', query: $utils.contextQuery() } : { name: 'index' }">
                     <img
-                        :src="`${$coroot.base_path}static/logo${$coroot.edition === 'Enterprise' ? '-ee' : ''}.svg`"
+                        :src="`${$codexray.base_path}static/logo${$codexray.edition === 'Enterprise' ? '-ee' : ''}.svg`"
                         height="38"
                         class="logo"
                         alt=":~#"
@@ -51,22 +51,22 @@
                             </v-btn>
                         </template>
                         <v-list dense>
-                            <v-list-item href="https://docs.coroot.com/" target="_blank">
+                            <v-list-item href="https://codexray.com/docs/" target="_blank">
                                 <v-icon small class="mr-1">mdi-book-open-outline</v-icon>Documentation</v-list-item
                             >
-                            <v-list-item href="https://github.com/coroot/coroot" target="_blank">
+                            <v-list-item href="https://github.com/codexray/codexray" target="_blank">
                                 <v-icon small class="mr-1">mdi-github</v-icon>GitHub
                             </v-list-item>
                             <v-list-item
-                                href="https://join.slack.com/t/coroot-community/shared_invite/zt-1gsnfo0wj-I~Zvtx5CAAb8vr~r~vecyw"
+                                href="https://join.slack.com/t/codexray-community/shared_invite/zt-1gsnfo0wj-I~Zvtx5CAAb8vr~r~vecyw"
                                 target="_blank"
                             >
                                 <v-icon small class="mr-1">mdi-slack</v-icon>Slack chat
                             </v-list-item>
                             <v-divider />
-                            <v-list-item> Coroot Edition: {{ $coroot.edition }} </v-list-item>
-                            <v-list-item href="https://github.com/coroot/coroot/releases" target="_blank">
-                                Version: {{ $coroot.version }}
+                            <v-list-item> codexray Edition: {{ $codexray.edition }} </v-list-item>
+                            <v-list-item href="https://github.com/codexray/codexray/releases" target="_blank">
+                                Version: {{ $codexray.version }}
                             </v-list-item>
                         </v-list>
                     </v-menu>
@@ -101,7 +101,7 @@
                         <template v-if="user && !user.anonymous">
                             <v-divider class="my-2" />
                             <v-list-item @click="changePassword = true">Change password</v-list-item>
-                            <v-list-item :to="{ name: 'logout' }">Sign out</v-list-item>
+                            <v-list-item :to="{ name: 'logout' }">Sing out</v-list-item>
                         </template>
                     </v-list>
                 </v-menu>
@@ -136,7 +136,7 @@
                         </template>
                         <template v-else-if="status.node_agent.status !== 'ok'">
                             <div class="flex-grow-1 mb-3 mb-sm-0">
-                                No metrics found. If you just installed Coroot and node-agent, please wait a couple minutes for it to collect data.
+                                No metrics found. If you just installed codexray and node-agent, please wait a couple minutes for it to collect data.
                                 <br />
                                 If you haven't installed node-agent, please do so now.
                             </div>
@@ -144,7 +144,7 @@
                         </template>
                         <template v-else-if="status.kube_state_metrics && status.kube_state_metrics.status !== 'ok'">
                             <div class="flex-grow-1 mb-3 mb-sm-0">
-                                It looks like you use Kubernetes, so Coroot requires <b>kube-state-metrics</b>
+                                It looks like you use Kubernetes, so codexray requires <b>kube-state-metrics</b>
                                 to combine individual containers into applications.
                             </div>
                             <v-btn outlined :to="{ name: 'project_settings' }">Install kube-state-metrics</v-btn>

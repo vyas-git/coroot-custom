@@ -106,9 +106,8 @@ export default {
         },
         showLogMessages(hyp) {
             return {
-                name: 'overview',
+                name: 'application',
                 params: {
-                    view: 'applications',
                     id: hyp.service,
                     report: 'Logs',
                 },

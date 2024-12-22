@@ -1,12 +1,6 @@
 <template>
     <div>
-        <v-progress-linear indeterminate v-if="loading" color="green" />
-
-        <v-alert v-if="error" color="red" icon="mdi-alert-octagon-outline" outlined text>
-            {{ error }}
-        </v-alert>
-
-        <ApplicationFilter :applications="applications" @filter="setFilter" class="my-4" />
+        <ApplicationFilter :applications="applications" :configureTo="categoriesTo" @filter="setFilter" class="my-4" />
 
         <v-data-table
             dense
@@ -61,20 +55,17 @@ import Led from '../components/Led.vue';
 import ApplicationFilter from '../components/ApplicationFilter.vue';
 
 export default {
+    props: {
+        deployments: Array,
+        categoriesTo: Object,
+    },
+
     components: { ApplicationFilter, Led },
 
     data() {
         return {
-            deployments: [],
             filter: new Set(),
-            error: '',
-            loading: false,
         };
-    },
-
-    mounted() {
-        this.get();
-        this.$events.watch(this, this.get, 'refresh');
     },
 
     computed: {
@@ -101,18 +92,6 @@ export default {
     methods: {
         setFilter(filter) {
             this.filter = filter;
-        },
-        get() {
-            this.loading = true;
-            this.error = '';
-            this.$api.getOverview('deployments', '', (data, error) => {
-                this.loading = false;
-                if (error) {
-                    this.error = error;
-                    return;
-                }
-                this.deployments = data.deployments;
-            });
         },
     },
 };
