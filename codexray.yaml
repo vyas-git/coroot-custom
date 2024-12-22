@@ -66,6 +66,7 @@ spec:
       containers:
       - name: codexray
         image: $DOCKERHUB_USERNAME/codexray:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
           name: http
