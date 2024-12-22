@@ -91,7 +91,12 @@ jobs:
           echo "${{ secrets.KUBECONFIG_B64 }}" | base64 -d > kubeconfig.yaml
           chmod 600 kubeconfig.yaml
           export KUBECONFIG=$(pwd)/kubeconfig.yaml
-
+      - name: Debug Kubeconfig Secret
+        run: |
+          echo "---- Raw Base64 Kubeconfig ----"
+          echo "${{ secrets.KUBECONFIG_B64 }}"
+          echo "---- Decoded Kubeconfig Preview ----"
+          echo "${{ secrets.KUBECONFIG_B64 }}" | base64 -d | head -n 10
       - name: Verify Kubernetes Access
         run: |
           echo "---- KUBECONFIG Server ----"
